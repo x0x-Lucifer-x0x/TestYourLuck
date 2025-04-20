@@ -1,6 +1,5 @@
-
-
-
+<!-- Pixel Resolution Revealer HTML Template -->
+<!-- This HTML file is designed to create a pixel resolution revealer web application. -->
 
 
 
@@ -136,10 +135,10 @@
   <div class="container">
     <div class="background"></div>
     <img id="pixelImage" src="images/pixel-100.png" alt="Pixelated Image">
-    <video id="videoPlayer" muted playsinline webkit-playsinline>
-      <source src="video/rickRoll.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
+    <video id="videoPlayer" autoplay loop muted playsinline preload="auto" style="max-width: 100%; height: auto;">
+        <source src="video/rickRoll.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     
     <div class="controls" id="controlsContainer">
       <button id="renderButton">Click me</button>
@@ -227,6 +226,7 @@
               pixelImage.style.display = 'none';
               videoPlayer.style.display = 'block';
               videoPlayer.loop = true;
+
               
               // Try to play video with both methods for better mobile compatibility
               const playPromise = videoPlayer.play();
