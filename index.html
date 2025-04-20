@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Resolution Revealer</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      z-index: -1;
+    }
+    
+    #pixelImage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+    
+    #videoPlayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      z-index: -1;
+    }
+    
+
+    .controls {
+      position: absolute;
+      z-index: 10;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      text-align: center;
+      transition: all 0.3s ease;
+      /* Initial centered position */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    #renderButton {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    
+    #renderButton:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="background"></div>
+    <img id="pixelImage" src="images/pixel-100.png" alt="Pixelated Image">
+    <video id="videoPlayer" muted>
+      <source src="video/rickRoll.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    
+    <div class="controls" id="controlsContainer">
+      <button id="renderButton">Click me</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const renderButton = document.getElementById('renderButton');
+      const pixelImage = document.getElementById('pixelImage');
+      const videoPlayer = document.getElementById('videoPlayer');
+      const controlsContainer = document.getElementById('controlsContainer');
+      
+      let clickCount = 0;
+      
+      // Image URLs for different resolutions
+      const imageSizes = [
+        { size: 10, url: "images/pixel-100.png" },
+        { size: 12, url: "images/pixel-90.png" },
+        { size: 14, url: "images/pixel-85.png" },
+        { size: 16, url: "images/pixel-80.png" },
+        { size: 20, url: "images/pixel-75.png" },
+        { size: 24, url: "images/pixel-70.png" },
+        { size: 28, url: "images/pixel-65.png" },
+        { size: 32, url: "images/pixel-55.png" }
+      ];
+      
+      // Button text changes with each click
+      const buttonTexts = [
+        "Click me",
+        "Once again",
+        "Yes, like that",
+        "Don't stop",
+        "Keep going",
+        "Almost there",
+        "So close",
+        "Just a bit more",
+        "Right there"
+      ];
+      
+      // Video URL (placeholder)
+      const videoUrl = "video/rickRoll.mp4";
+      
+      // Set initial image
+      pixelImage.src = imageSizes[0].url;
+      
+      renderButton.addEventListener('click', function() {
+        clickCount++;
+        
+        // Update button text
+        if (clickCount < buttonTexts.length) {
+          renderButton.textContent = buttonTexts[clickCount];
+        } else {
+          renderButton.textContent = "Again!";
+        }
+        
+        // Only randomize position after first click (keep centered on start)
+        if (clickCount > 0) {
+          // Remove center positioning
+          controlsContainer.style.top = "";
+          controlsContainer.style.left = "";
+          controlsContainer.style.transform = "none";
+          
+          // Set random position
+          setRandomPosition();
+        }
+        
+        if (clickCount <= imageSizes.length) {
+          // Show image with increasing resolution
+          const currentImage = imageSizes[clickCount - 1];
+          pixelImage.src = currentImage.url;
+          
+          // If we reached the final resolution, prepare to play video and remove controls
+          if (clickCount === imageSizes.length) {
+            setTimeout(() => {
+              pixelImage.style.display = 'none';
+              videoPlayer.style.display = 'block';
+              videoPlayer.play();
+              
+              // Hide controls completely after reaching maximum count
+              controlsContainer.style.display = 'none';
+              
+            }, 1000);
+          }
+        }
+      });
+      
+      // Function to set random position for controls
+      function setRandomPosition() {
+        // Get window dimensions
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // Get controls dimensions
+        const controlsWidth = controlsContainer.offsetWidth;
+        const controlsHeight = controlsContainer.offsetHeight;
+        
+        // Calculate maximum positions to keep controls fully visible
+        const maxX = windowWidth - controlsWidth - 20; // 20px padding from edge
+        const maxY = windowHeight - controlsHeight - 20;
+        
+        // Set random position
+        const randomX = Math.floor(Math.random() * maxX);
+        const randomY = Math.floor(Math.random() * maxY);
+        
+        // Apply new position
+        controlsContainer.style.left = randomX + 'px';
+        controlsContainer.style.top = randomY + 'px';
+      }
+      
+      // Set up video player with autoplay once loaded
+      videoPlayer.addEventListener('canplaythrough', function() {
+        videoPlayer.muted = false;
+      });
+    });
+  </script>
+</body>
+</html>
