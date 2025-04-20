@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -129,10 +136,10 @@
   <div class="container">
     <div class="background"></div>
     <img id="pixelImage" src="images/pixel-100.png" alt="Pixelated Image">
-    <video id="videoPlayer" autoplay loop muted playsinline preload="auto" style="max-width: 100%; height: auto;">
-        <source src="video/rickRoll.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
+    <video id="videoPlayer" muted playsinline webkit-playsinline>
+      <source src="video/rickRoll.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
     
     <div class="controls" id="controlsContainer">
       <button id="renderButton">Click me</button>
@@ -159,13 +166,6 @@
         { size: 28, url: "images/pixel-65.png" },
         { size: 32, url: "images/pixel-55.png" }
       ];
-
-      // Preload all images to avoid lag on first display
-        imageSizes.forEach(img => {
-        const preloadImg = new Image();
-        preloadImg.src = img.url;
-        });
-
       
       // Button text changes with each click
       const buttonTexts = [
@@ -179,6 +179,12 @@
         "Just a bit more",
         "Right there"
       ];
+
+      // Preload all images to avoid lag on first display
+      imageSizes.forEach(img => {
+        const preloadImg = new Image();
+        preloadImg.src = img.url;
+        });
       
       // Video URL (placeholder)
       const videoUrl = "video/rickRoll.mp4";
@@ -221,7 +227,7 @@
               pixelImage.style.display = 'none';
               videoPlayer.style.display = 'block';
               videoPlayer.loop = true;
-
+              
               // Try to play video with both methods for better mobile compatibility
               const playPromise = videoPlayer.play();
               
