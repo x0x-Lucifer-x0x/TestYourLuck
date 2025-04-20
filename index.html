@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Pixel Resolution Revealer</title>
   <style>
     body, html {
       margin: 0;
       padding: 0;
       height: 100%;
+      width: 100%;
       overflow: hidden;
       font-family: Arial, sans-serif;
+      touch-action: manipulation;
     }
     
     .container {
@@ -54,7 +56,6 @@
       z-index: -1;
     }
     
-
     .controls {
       position: absolute;
       z-index: 10;
@@ -67,6 +68,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      max-width: 80%;
+      width: auto;
     }
     
     #renderButton {
@@ -78,10 +81,47 @@
       cursor: pointer;
       border-radius: 4px;
       transition: background-color 0.3s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     #renderButton:hover {
       background-color: #45a049;
+    }
+    
+    /* Responsive adaptations */
+    @media (max-width: 768px) {
+      .controls {
+        padding: 0.8rem 1.6rem;
+      }
+      
+      #renderButton {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .controls {
+        padding: 0.6rem 1.2rem;
+      }
+      
+      #renderButton {
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+    }
+    
+    /* For landscape orientation on mobile */
+    @media (max-height: 480px) and (orientation: landscape) {
+      .controls {
+        padding: 0.5rem 1rem;
+      }
+      
+      #renderButton {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
     }
   </style>
 </head>
@@ -89,10 +129,10 @@
   <div class="container">
     <div class="background"></div>
     <img id="pixelImage" src="images/pixel-100.png" alt="Pixelated Image">
-    <video id="videoPlayer" muted>
-      <source src="video/rickRoll.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
+    <video id="videoPlayer" autoplay loop muted playsinline preload="auto" style="max-width: 100%; height: auto;">
+        <source src="video/rickRoll.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     
     <div class="controls" id="controlsContainer">
       <button id="renderButton">Click me</button>
@@ -139,7 +179,10 @@
       // Set initial image
       pixelImage.src = imageSizes[0].url;
       
-      renderButton.addEventListener('click', function() {
+      // Handle both click and touch events
+      renderButton.addEventListener('click', handleButtonPress);
+      
+      function handleButtonPress() {
         clickCount++;
         
         // Update button text
@@ -170,7 +213,44 @@
             setTimeout(() => {
               pixelImage.style.display = 'none';
               videoPlayer.style.display = 'block';
-              videoPlayer.play();
+              
+              // Try to play video with both methods for better mobile compatibility
+              const playPromise = videoPlayer.play();
+              
+              if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                  // Video playback started successfully
+                  videoPlayer.muted = false; // Unmute after autoplay starts
+                })
+                .catch(error => {
+                  // Auto-play was prevented - show a message or UI element to let the user start playback
+                  console.log("Autoplay was prevented. Please interact with the document first.");
+                  
+                  // Create a play button for mobile
+                  const playButton = document.createElement('button');
+                  playButton.textContent = "Tap to Play";
+                  playButton.style.position = "absolute";
+                  playButton.style.zIndex = "100";
+                  playButton.style.top = "50%";
+                  playButton.style.left = "50%";
+                  playButton.style.transform = "translate(-50%, -50%)";
+                  playButton.style.padding = "15px 30px";
+                  playButton.style.fontSize = "16px";
+                  playButton.style.backgroundColor = "#4CAF50";
+                  playButton.style.color = "white";
+                  playButton.style.border = "none";
+                  playButton.style.borderRadius = "4px";
+                  playButton.style.cursor = "pointer";
+                  
+                  document.body.appendChild(playButton);
+                  
+                  playButton.addEventListener('click', function() {
+                    videoPlayer.play();
+                    videoPlayer.muted = false;
+                    playButton.remove();
+                  });
+                });
+              }
               
               // Hide controls completely after reaching maximum count
               controlsContainer.style.display = 'none';
@@ -178,7 +258,7 @@
             }, 1000);
           }
         }
-      });
+      }
       
       // Function to set random position for controls
       function setRandomPosition() {
@@ -194,19 +274,28 @@
         const maxX = windowWidth - controlsWidth - 20; // 20px padding from edge
         const maxY = windowHeight - controlsHeight - 20;
         
-        // Set random position
-        const randomX = Math.floor(Math.random() * maxX);
-        const randomY = Math.floor(Math.random() * maxY);
+        // Set random position - ensure it doesn't go outside visible area
+        const randomX = Math.max(20, Math.min(maxX, Math.floor(Math.random() * maxX)));
+        const randomY = Math.max(20, Math.min(maxY, Math.floor(Math.random() * maxY)));
         
         // Apply new position
         controlsContainer.style.left = randomX + 'px';
         controlsContainer.style.top = randomY + 'px';
       }
       
-      // Set up video player with autoplay once loaded
-      videoPlayer.addEventListener('canplaythrough', function() {
-        videoPlayer.muted = false;
+      // Handle window resize - recalculate button position if needed
+      window.addEventListener('resize', function() {
+        if (clickCount > 0 && clickCount < imageSizes.length) {
+          setRandomPosition();
+        }
       });
+      
+      // Fix for iOS Safari - prevent page from being unresponsive
+      document.addEventListener('touchmove', function(event) {
+        if (event.scale !== 1) {
+          event.preventDefault();
+        }
+      }, { passive: false });
     });
   </script>
 </body>
