@@ -159,6 +159,13 @@
         { size: 28, url: "images/pixel-65.png" },
         { size: 32, url: "images/pixel-55.png" }
       ];
+
+      // Preload all images to avoid lag on first display
+        imageSizes.forEach(img => {
+        const preloadImg = new Image();
+        preloadImg.src = img.url;
+        });
+
       
       // Button text changes with each click
       const buttonTexts = [
@@ -213,7 +220,8 @@
             setTimeout(() => {
               pixelImage.style.display = 'none';
               videoPlayer.style.display = 'block';
-              
+              videoPlayer.loop = true;
+
               // Try to play video with both methods for better mobile compatibility
               const playPromise = videoPlayer.play();
               
